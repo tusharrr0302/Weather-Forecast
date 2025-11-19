@@ -1,1 +1,159 @@
-#map { height: 180px; }
+body {
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.site-header {
+    width: 100%;
+    background-color: #1e1e1e;
+    padding: 16px 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.site-nav {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.nav-links {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+}
+
+.nav-link {
+    color: #b0b0b0;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #ffffff;
+    background-color: #333;
+}
+
+.nav-link.active,
+.nav-home[href="home.html"]:not([href="index.html"]):not([href="about.html"]),
+.nav-weather[href="index.html"],
+.nav-about[href="about.html"] {
+    color: #ffffff;
+    background-color: #00bfff;
+}
+
+main {
+    flex: 1;
+    width: 90%;
+    max-width: 800px;
+    margin: 48px auto;
+    text-align: center;
+}
+
+
+h1 {
+    font-size: 45px;
+    margin-bottom: 16px;
+    color: #ffffff;
+}
+
+.appName {
+    font-size: 45px;
+    margin-bottom: 16px;
+    color: #00bfff;
+}
+
+p {
+    font-size: 19px;
+    line-height: 1.6;
+    margin-bottom: 32px;
+}
+
+.main {
+    background-color: #121212;
+}
+
+button {
+    background-color: #00bfff;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin: 10px;
+}
+
+button:hover {
+    background-color: #009fd9;
+}
+
+input#pincode {
+    padding: 12px;
+    font-size: 16px;
+    width: 200px;
+    border: 2px solid #444;
+    border-radius: 8px;
+    background-color: #333;
+    color: white;
+    margin-right: 10px;
+}
+
+input#pincode:focus {
+    outline: none;
+    border-color: #00bfff;
+}
+
+#demo {
+    margin-top: 30px;
+    font-size: 22px;
+    background-color: #1e1e1e;
+    padding: 20px;
+    border-radius: 10px;
+    display: inline-block;
+    min-width: 300px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    color: white;
+}
+
+#map {
+    width: 100%;
+    max-width: 600px;
+    height: 400px;
+    margin: 30px auto;
+    border: 4px solid #333;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+@media (max-width: 640px) {
+    .nav-links {
+        flex-direction: column;
+        gap: 16px;
+    }
+    h1 {
+        font-size: 35px;
+    }
+    #map {
+        height: 300px;
+    }
+    input#pincode {
+        width: 100%;
+        margin-bottom: 10px;
+        margin-right: 0;
+    }
+}

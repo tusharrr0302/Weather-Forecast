@@ -21,8 +21,7 @@ async function success(position) {
     Temperature: ${(data.main.temp - 273.15).toFixed(2)}℃ <br> 
     Humidity: ${data.main.humidity}% <br>
     Weather: ${data.weather[0].main} <br>
-    Location: ${data.name}
-`;
+    Location: ${data.name}`
     x.style.color="white"
 }
 
@@ -73,8 +72,7 @@ async function searchByPincode(){
   x.innerHTML = `
     Temperature: ${(dataFromOWM.main.temp - 273.15).toFixed(2)}℃ <br> 
     Humidity: ${dataFromOWM.main.humidity}% <br>
-    Weather: ${dataFromOWM.weather[0].main} <br>
-    Address: ${address}`
+    Weather: ${dataFromOWM.weather[0].main}`
     x.style.color="white"
 }
 
@@ -90,4 +88,9 @@ map.on("click", async function (e) {
     .setLatLng([lat, lon])
     .setContent(`<b>Clicked Location</b><br>Address: ${address}`)
     .openOn(map);
+  x.innerHTML = `
+    Temperature: ${(data.main.temp - 273.15).toFixed(2)}℃ <br> 
+    Humidity: ${data.main.humidity}% <br>
+    Weather: ${data.weather[0].main}`
+    x.style.color="white"
 });
