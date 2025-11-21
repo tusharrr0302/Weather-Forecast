@@ -1,37 +1,44 @@
-
-
 const clientId = "73705189850145dabc55a8e8be71e94a";
 const params = new URLSearchParams(window.location.search);
 const code = params.get("code");
 
+// top-level token storage so SDK can access it
+let accessToken = null;
+
 async function fetchProfile(token) {
     const result = await fetch("https://api.spotify.com/v1/me", {
-        method: "GET", headers: { Authorization: `Bearer ${token}` }
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` }
     });
 
     return await result.json();
 }
 
 function populateUI(profile) {
-    document.getElementById("displayName").innerText = profile.display_name;
-    if (profile.images[0]) {
+    const displayName = profile.display_name || "User";
+    document.getElementById("displayName").innerText = `${displayName}`;
+    if (profile.images && profile.images[0]) {
         const profileImage = new Image(200, 200);
         profileImage.src = profile.images[0].url;
-        document.getElementById("avatar").appendChild(profileImage);
-        document.getElementById("imgUrl").innerText = profile.images[0].url;
+        const holder = document.getElementById("avatar");
+        holder.innerHTML = "";
+        holder.appendChild(profileImage);
+        const imgUrlEl = document.getElementById("imgUrl");
+        if (imgUrlEl) imgUrlEl.innerText = profile.images[0].url;
     }
-    document.getElementById("id").innerText = profile.id;
-    document.getElementById("email").innerText = profile.email;
-    document.getElementById("uri").innerText = profile.uri;
-    document.getElementById("uri").setAttribute("href", profile.external_urls.spotify);
-    document.getElementById("url").innerText = profile.href;
-    document.getElementById("url").setAttribute("href", profile.href);
+    document.getElementById("id").innerText = profile.id || "";
+    document.getElementById("email").innerText = profile.email || "";
+    document.getElementById("uri").innerText = profile.uri || "";
+    if (profile.external_urls && profile.external_urls.spotify) {
+        document.getElementById("uri").setAttribute("href", profile.external_urls.spotify);
+    }
+    document.getElementById("url").innerText = profile.href || "";
+    document.getElementById("url").setAttribute("href", profile.href || "#");
 }
 
 async function generateCodeVerifier(length) {
     let text = '';
     let possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
     for (let i = 0; i < length; i++) {
         text += possible.charAt(Math.floor(Math.random() * possible.length));
     }
@@ -57,7 +64,7 @@ async function redirectToAuthCodeFlow(clientId) {
     params.append("client_id", clientId);
     params.append("response_type", "code");
     params.append("redirect_uri", "http://127.0.0.1:5500/music-sub.html");
-    params.append("scope", "user-read-private user-read-email");
+    params.append("scope", "user-read-private user-read-email streaming user-read-playback-state user-modify-playback-state");
     params.append("code_challenge_method", "S256");
     params.append("code_challenge", challenge);
 
@@ -77,52 +84,76 @@ async function getAccessToken(clientId, code) {
     const result = await fetch("https://accounts.spotify.com/api/token", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params
+        body: params.toString()
     });
 
-    const { access_token } = await result.json();
-    return access_token;
+    const data = await result.json();
+    // store token so SDK can access it
+    if (data.access_token) {
+        localStorage.setItem("access_token", data.access_token);
+    }
+    return data.access_token;
 }
 
+// run auth & profile exchange inside async IIFE so we can use await
+(async function mainAuthFlow() {
+    if (!code) {
+        redirectToAuthCodeFlow(clientId);
+        return;
+    }
 
-if (!code) {
-    redirectToAuthCodeFlow(clientId);
-} else {
-    const accessToken = getAccessToken(clientId, code);
-    const profile = fetchProfile(accessToken);
-    populateUI(profile);
-}
+    // we have code -> exchange for token and fetch profile
+    try {
+        accessToken = await getAccessToken(clientId, code);
+        const profile = await fetchProfile(accessToken);
+        populateUI(profile);
+
+        // clean URL (optional)
+        history.replaceState(null, "", window.location.pathname);
+    } catch (err) {
+        console.error("Auth/profile error:", err);
+    }
+})();
 
 
-//Music-Sub.html 
-
+// Spotify Web Playback SDK entry point
 window.onSpotifyWebPlaybackSDKReady = () => {
-            const token = getAccessToken(clientId, code);
-            const player = new Spotify.Player({
-                name: 'Web Playback SDK Quick Start Player',
-                getOAuthToken: cb => { cb(token); },
+    // prefer in-memory accessToken, fallback to localStorage
+    const token = accessToken || localStorage.getItem("access_token");
+    if (!token) {
+        console.error("No access token available for the Web Playback SDK.");
+        return;
+    }
 
- });
-}
+    const player = new Spotify.Player({
+        name: 'Web Playback SDK Quick Start Player',
+        getOAuthToken: cb => { cb(token); },
+        volume: 0.5
+    });
 
-            // Ready
-player.addListener('ready', ({ device_id }) => {
-    console.log('Ready with Device ID', device_id);});
+    // Ready
+    player.addListener('ready', ({ device_id }) => {
+        console.log('Ready with Device ID', device_id);
+    });
 
-            // Not Ready
-player.addListener('not_ready', ({ device_id }) => {
-    console.log('Device ID has gone offline', device_id);});
+    // Not Ready
+    player.addListener('not_ready', ({ device_id }) => {
+        console.log('Device ID has gone offline', device_id);
+    });
 
-player.addListener('initialization_error', ({ message }) => {
-    console.error(message);});
+    player.addListener('initialization_error', ({ message }) => {
+        console.error(message);
+    });
+    player.addListener('authentication_error', ({ message }) => {
+        console.error(message);
+    });
+    player.addListener('account_error', ({ message }) => {
+        console.error(message);
+    });
 
-player.addListener('authentication_error', ({ message }) => {
-    console.error(message);});
+    document.getElementById('togglePlay').onclick = function() {
+        player.togglePlay();
+    };
 
-player.addListener('account_error', ({ message }) => {
-    console.error(message);});
-
- document.getElementById('togglePlay').onclick = function() {
-    player.togglePlay();};
-
-player.connect();
+    player.connect();
+};
