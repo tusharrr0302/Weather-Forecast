@@ -1,159 +1,49 @@
-const clientId = "73705189850145dabc55a8e8be71e94a";
-const params = new URLSearchParams(window.location.search);
-const code = params.get("code");
-
-// top-level token storage so SDK can access it
-let accessToken = null;
-
-async function fetchProfile(token) {
-    const result = await fetch("https://api.spotify.com/v1/me", {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` }
-    });
-
-    return await result.json();
-}
-
-function populateUI(profile) {
-    const displayName = profile.display_name || "User";
-    document.getElementById("displayName").innerText = `${displayName}`;
-    if (profile.images && profile.images[0]) {
-        const profileImage = new Image(200, 200);
-        profileImage.src = profile.images[0].url;
-        const holder = document.getElementById("avatar");
-        holder.innerHTML = "";
-        holder.appendChild(profileImage);
-        const imgUrlEl = document.getElementById("imgUrl");
-        if (imgUrlEl) imgUrlEl.innerText = profile.images[0].url;
-    }
-    document.getElementById("id").innerText = profile.id || "";
-    document.getElementById("email").innerText = profile.email || "";
-    document.getElementById("uri").innerText = profile.uri || "";
-    if (profile.external_urls && profile.external_urls.spotify) {
-        document.getElementById("uri").setAttribute("href", profile.external_urls.spotify);
-    }
-    document.getElementById("url").innerText = profile.href || "";
-    document.getElementById("url").setAttribute("href", profile.href || "#");
-}
-
-async function generateCodeVerifier(length) {
-    let text = '';
-    let possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (let i = 0; i < length; i++) {
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-    }
-    return text;
-}
-
-async function generateCodeChallenge(codeVerifier) {
-    const data = new TextEncoder().encode(codeVerifier);
-    const digest = await window.crypto.subtle.digest('SHA-256', data);
-    return btoa(String.fromCharCode.apply(null, [...new Uint8Array(digest)]))
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=+$/, '');
-}
-
-async function redirectToAuthCodeFlow(clientId) {
-    const verifier = await generateCodeVerifier(128);
-    const challenge = await generateCodeChallenge(verifier);
-
-    localStorage.setItem("verifier", verifier);
-
-    const params = new URLSearchParams();
-    params.append("client_id", clientId);
-    params.append("response_type", "code");
-    params.append("redirect_uri", "http://127.0.0.1:5500/music-sub.html");
-    params.append("scope", "user-read-private user-read-email streaming user-read-playback-state user-modify-playback-state");
-    params.append("code_challenge_method", "S256");
-    params.append("code_challenge", challenge);
-
-    document.location = `https://accounts.spotify.com/authorize?${params.toString()}`;
-}
-
-async function getAccessToken(clientId, code) {
-    const verifier = localStorage.getItem("verifier");
-
-    const params = new URLSearchParams();
-    params.append("client_id", clientId);
-    params.append("grant_type", "authorization_code");
-    params.append("code", code);
-    params.append("redirect_uri", "http://127.0.0.1:5500/music-sub.html");
-    params.append("code_verifier", verifier);
-
-    const result = await fetch("https://accounts.spotify.com/api/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString()
-    });
-
-    const data = await result.json();
-    // store token so SDK can access it
-    if (data.access_token) {
-        localStorage.setItem("access_token", data.access_token);
-    }
-    return data.access_token;
-}
-
-// run auth & profile exchange inside async IIFE so we can use await
-(async function mainAuthFlow() {
-    if (!code) {
-        redirectToAuthCodeFlow(clientId);
-        return;
-    }
-
-    // we have code -> exchange for token and fetch profile
-    try {
-        accessToken = await getAccessToken(clientId, code);
-        const profile = await fetchProfile(accessToken);
-        populateUI(profile);
-
-        // clean URL (optional)
-        history.replaceState(null, "", window.location.pathname);
-    } catch (err) {
-        console.error("Auth/profile error:", err);
-    }
-})();
-
-
-// Spotify Web Playback SDK entry point
-window.onSpotifyWebPlaybackSDKReady = () => {
-    // prefer in-memory accessToken, fallback to localStorage
-    const token = accessToken || localStorage.getItem("access_token");
-    if (!token) {
-        console.error("No access token available for the Web Playback SDK.");
-        return;
-    }
-
-    const player = new Spotify.Player({
-        name: 'Web Playback SDK Quick Start Player',
-        getOAuthToken: cb => { cb(token); },
-        volume: 0.5
-    });
-
-    // Ready
-    player.addListener('ready', ({ device_id }) => {
-        console.log('Ready with Device ID', device_id);
-    });
-
-    // Not Ready
-    player.addListener('not_ready', ({ device_id }) => {
-        console.log('Device ID has gone offline', device_id);
-    });
-
-    player.addListener('initialization_error', ({ message }) => {
-        console.error(message);
-    });
-    player.addListener('authentication_error', ({ message }) => {
-        console.error(message);
-    });
-    player.addListener('account_error', ({ message }) => {
-        console.error(message);
-    });
-
-    document.getElementById('togglePlay').onclick = function() {
-        player.togglePlay();
+var saveclass = null;
+const apiKey = "e5f6724a0d910e4c9cb00f6c27c6e2cd"
+const playlists = {
+      Clear:      'PL4fGSpr7zM3qL9X4uXM3ZYw1A1b9X8V3f', // Sunny / Happy vibes
+      Clouds:     'PL4fGSpr7zM3o5XZz2v3g_9Z4d5j3k8p0r', // Chill / Lo-fi
+      Rain:       'PL8B722A7F5F7E927B',                     // Rainy day jazz / calm
+      Drizzle:    'PL8B722A7F5F7E927B',                     // Same as rain
+      Thunderstorm:'PL4fGSpr7zM3rP8c5t5m5v7q8p9d2k3s1a', // Dramatic / intense
+      Snow:       'PL4fGSpr7zM3rG7d8a9b0c1d2e3f4g5h6j', // Winter / cozy
+      Mist:       'PL4fGSpr7zM3pQ6r7s8t9u0v1w2x3y4z5a', // Calm / ambient
+      Fog:        'PL4fGSpr7zM3pQ6r7s8t9u0v1w2x3y4z5a',
+      default:    'PL4fGSpr7zM3qL9X4uXM3ZYw1A1b9X8V3f'  // Sunny as fallback
     };
 
-    player.connect();
-};
+    function getWeatherPlaylist(mainWeather) {
+      return playlists[mainWeather] || playlists.default;
+    }
+
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(success, error)
+  }
+else { 
+  x.innerHTML = "Geolocation is not supported by this browser."
+}
+
+async function success(position) {
+    const lat = position.coords.latitude
+    const lon = position.coords.longitude
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}`)
+    const data = await res.json()
+    console.log(data)
+    const weatherMain = data.weather[0].main;
+    const playlistId = getWeatherPlaylist(weatherMain);
+            const playerHtml = `
+              <iframe 
+                width="100%" 
+                height="400" 
+                src="https://www.youtube.com/embed/videoseries?list=${playlistId}&loop=1&autoplay=1&mute=0" 
+                allow="autoplay; encrypted-media" 
+                allowfullscreen>
+              </iframe>
+            `;
+            document.getElementById('music-player').innerHTML = playerHtml;
+}
+
+function error() {
+  alert("Sorry, no position available.")
+}
+

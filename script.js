@@ -1,6 +1,6 @@
 const apiKey = "e5f6724a0d910e4c9cb00f6c27c6e2cd"
 let x = document.getElementById("demo")
-
+const y = document.getElementById("demo2");
 // Function to get location via browser geolocation
 
 if (navigator.geolocation) {
@@ -20,11 +20,15 @@ async function success(position) {
   weekday: "short",
   day: "numeric",
   month: "short"
-});
+  });
+
+  const resForW= await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`)
+  const dataForW = await resForW.json()
+  console.log(dataForW)
+  await displayFiveDayFromForecast(dataForW);
 
 x.innerHTML = `
   <div style="
-      padding: 50px;
       font-family: 'Poppins', sans-serif;
       color: white;
       display: flex;
@@ -33,6 +37,7 @@ x.innerHTML = `
       align-items: center;
       text-align: center;
   ">
+      <img src="http://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png"></img>
       <p style="margin: 0; font-size: 14px; opacity: 0.8;">
           ${currentDate}
       </p>
@@ -40,7 +45,7 @@ x.innerHTML = `
           margin: 10px 0 0;
           font-size: 54px;
           font-weight: 600;
-          line-height: 1; ">
+          line-height: 1; "> 
           ${(data.main.temp - 273.15).toFixed(1)}°C
       </h1>
       <p style="margin: 6px 0 2px; font-size: 18px; opacity: 0.85;">
@@ -56,6 +61,7 @@ x.innerHTML = `
 `;
 
 x.style.color = "white";
+y.style.color = "white";
 
 }
 function error() {
@@ -89,15 +95,19 @@ async function searchByLocation(){
   const dataFromOWM = await resFromOWM.json()
   console.log(dataFromOWM)
 
-const currentDate = new Date().toLocaleDateString("en-IN", {
+  const currentDate = new Date().toLocaleDateString("en-IN", {
   weekday: "short",
   day: "numeric",
   month: "short"
+
 });
 
+  const resForW= await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`)
+  const dataForW = await resForW.json()
+  console.log(dataForW)
+  await displayFiveDayFromForecast(dataForW);
 x.innerHTML = `
   <div style="
-      padding: 50px;
       font-family: 'Poppins', sans-serif;
       color: white;
       display: flex;
@@ -106,7 +116,7 @@ x.innerHTML = `
       align-items: center;
       text-align: center;
   ">
-
+      <img src="http://openweathermap.org/img/wn/${dataFromOWM.weather[0].icon}@2x.png"></img>
       <p style="margin: 0; font-size: 14px; opacity: 0.8;">
         ${currentDate}
       </p>
@@ -148,11 +158,15 @@ map.on("click", async function (e) {
   weekday: "short",
   day: "numeric",
   month: "short"
-});
+  });
+  
+  const resForW= await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`)
+  const dataForW = await resForW.json()
+  console.log(dataForW)
+  await displayFiveDayFromForecast(dataForW);
 
 x.innerHTML = `
   <div style="
-      padding: 50px;
       font-family: 'Poppins', sans-serif;
       color: white;
       display: flex;
@@ -161,6 +175,7 @@ x.innerHTML = `
       align-items: center;
       text-align: center;
   ">
+      <img src="http://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png"></img>
       <p style="margin: 0; font-size: 14px; opacity: 0.8;">
         ${currentDate}
       </p>
@@ -186,10 +201,73 @@ x.style.color = "white";
 });
 
 
-// //weekly weather display (placeholder)
-// const weeklyweather = document.getElementById("weekly-weather");
-// const resweekly = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=20.5937&lon=78.9629&appid=${apiKey}`);
-// const dataweekly = await resweekly.json();
-// console.log(dataweekly);
+// Weekly forecast display
+async function displayFiveDayFromForecast(data) {
+  y.innerHTML = ""; 
 
-// weeklyweather.innerHTML = `<h2 style="color:white; text-align:center; margin-bottom:20px;">5-Day Weather Forecast (Every 3 Hours)</h2>`;
+  // Group entries by date (YYYY-MM-DD)
+  const groups = {};
+  data.list.forEach(item => {
+    const date = item.dt_txt.split(" ")[0];
+    if (!groups[date]) groups[date] = [];
+    groups[date].push(item);
+  });
+
+  // Sort dates & pick first 5 days
+  const dates = Object.keys(groups).sort().slice(0, 5);
+
+  // create fiveDay array
+  const fiveDay = [];
+
+  // closest fallback
+  const targetHour = 12;
+
+  dates.forEach(date => {
+    const arr = groups[date];
+    // get best item
+    let best = arr[0];
+    let bestDiff = Math.abs(new Date(arr[0].dt_txt).getHours() - targetHour);
+    for (let i = 1; i < arr.length; i++) {
+      const hour = new Date(arr[i].dt_txt).getHours();
+      const diff = Math.abs(hour - targetHour);
+      if (diff < bestDiff) {
+        best = arr[i];
+        bestDiff = diff;
+      }
+    }
+    fiveDay.push(best);
+  });
+
+  // Render cards
+  fiveDay.forEach(day => {
+    const d = new Date(day.dt_txt);
+    const dateStr = d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+    const temp = Math.round(day.main.temp);
+    const humidity = day.main.humidity;
+    const weather = day.weather[0].description;
+    const icon = day.weather[0].icon;
+    const wind = day.wind.speed;
+
+    y.innerHTML += `
+  <div class="weather-card">
+    <img src="https://openweathermap.org/img/wn/${icon}@4x.png" alt="${weather}">
+    <div class="weather-center">
+      <div class="date">${dateStr}</div>
+      <div class="temp-line">
+        <div class="temperature">${temp}</div>
+        <div class="unit">°C</div>
+      </div>
+      <div class="description">${weather}</div>
+    </div>
+
+    <div class="details">
+      <div class="detail-item">
+        <strong>${humidity}%</strong>
+        <span>Humidity</span>
+      </div>
+    </div>
+  </div>
+`;
+  });
+}
+
