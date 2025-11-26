@@ -15,7 +15,7 @@
 }
 
 .music-player{
-  width : 400px;
+  width : auto;
   background : #222222;
   border-radius : 10px;
   box-shadow : 0 15px 25px rgba(33, 33, 33, 0.5);
@@ -34,5 +34,12 @@
     top : 20px;
     right : 20px;
     font-family: 'poppins', sans-serif;
-    font-size : 18px;
-}
+    font-size : 14px;
+    color : #fff;
+    cursor : pointer;
+} 
+
+
+
+
+

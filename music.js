@@ -1,49 +1,77 @@
 var saveclass = null;
-const apiKey = "e5f6724a0d910e4c9cb00f6c27c6e2cd"
+const apiKey = "e5f6724a0d910e4c9cb00f6c27c6e2cd";
 const playlists = {
-      Clear:      'PL4fGSpr7zM3qL9X4uXM3ZYw1A1b9X8V3f', // Sunny / Happy vibes
-      Clouds:     'PL4fGSpr7zM3o5XZz2v3g_9Z4d5j3k8p0r', // Chill / Lo-fi
-      Rain:       'PL8B722A7F5F7E927B',                     // Rainy day jazz / calm
-      Drizzle:    'PL8B722A7F5F7E927B',                     // Same as rain
-      Thunderstorm:'PL4fGSpr7zM3rP8c5t5m5v7q8p9d2k3s1a', // Dramatic / intense
-      Snow:       'PL4fGSpr7zM3rG7d8a9b0c1d2e3f4g5h6j', // Winter / cozy
-      Mist:       'PL4fGSpr7zM3pQ6r7s8t9u0v1w2x3y4z5a', // Calm / ambient
-      Fog:        'PL4fGSpr7zM3pQ6r7s8t9u0v1w2x3y4z5a',
-      default:    'PL4fGSpr7zM3qL9X4uXM3ZYw1A1b9X8V3f'  // Sunny as fallback
-    };
-
-    function getWeatherPlaylist(mainWeather) {
-      return playlists[mainWeather] || playlists.default;
-    }
-
+  Clear: 'PLkt9XUTl-ArjQZFVNK1oayMWYDLlMGSrW', 
+  Clouds: 'PLkt9XUTl-Arih01dq-xS78UkSjvc77SIJ', 
+  Rain: 'PLkt9XUTl-Arhmi4RPQ--XCYK2xIHDWLskw', 
+  Drizzle: 'PLkt9XUTl-Arhmi4RPQ--XCYK2xIHDWLskw',
+  Thunderstorm: 'PLkt9XUTl-ArjSjdlIc-3x9DrMm5FXId9N', 
+  Snow: 'PPLkt9XUTl-ArixwkZYEQimDcazTc9Fgbvg', 
+  Mist: 'PLkt9XUTl-Ari4soHZcB7_6_Pq6tf_IMhu', 
+  Fog: 'PLkt9XUTl-Ari4soHZcB7_6_Pq6tf_IMhu',
+  default: 'PLkt9XUTl-ArjQZFVNK1oayMWYDLlMGSrW'
+};
+function getWeatherPlaylist(mainWeather) {
+  return playlists[mainWeather] || playlists.default;
+}
+let player;
 if (navigator.geolocation) {
-  navigator.geolocation.getCurrentPosition(success, error)
-  }
-else { 
-  x.innerHTML = "Geolocation is not supported by this browser."
+  navigator.geolocation.getCurrentPosition(success, error);
+} else {
+  document.getElementById('music-player').innerHTML = "Geolocation is not supported by this browser."; // Fixed: Use 'music-player' instead of undefined 'x'
 }
-
 async function success(position) {
-    const lat = position.coords.latitude
-    const lon = position.coords.longitude
-    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}`)
-    const data = await res.json()
-    console.log(data)
-    const weatherMain = data.weather[0].main;
-    const playlistId = getWeatherPlaylist(weatherMain);
-            const playerHtml = `
-              <iframe 
-                width="100%" 
-                height="400" 
-                src="https://www.youtube.com/embed/videoseries?list=${playlistId}&loop=1&autoplay=1&mute=0" 
-                allow="autoplay; encrypted-media" 
-                allowfullscreen>
-              </iframe>
-            `;
-            document.getElementById('music-player').innerHTML = playerHtml;
+  const lat = position.coords.latitude;
+  const lon = position.coords.longitude;
+  const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}`);
+  const data = await res.json();
+  console.log(data);
+  const weatherMain = data.weather[0].main;
+  const playlistId = getWeatherPlaylist(weatherMain);
+  document.getElementById('music-player').innerHTML = '<div id="youtube-player"></div>';
+  if (!window.onYouTubeIframeAPIReady) {
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    window.onYouTubeIframeAPIReady = initPlayer; 
+  } else {
+    initPlayer();
+  }
+  function initPlayer() {
+    player = new YT.Player('youtube-player', {
+      width: '100%',
+      height: 450,
+      videoId: '',
+      playerVars: {
+        listType: 'playlist',
+        list: playlistId,
+        autoplay: 1,
+        loop: 1,
+        playlist: playlistId,
+        mute: 1,
+        rel: 0,
+        modestbranding: 1,
+        iv_load_policy: 3
+      },
+      events: {
+        onReady: onPlayerReady,
+        onError: onPlayerError
+      }
+    });
+  }
+  function onPlayerReady(event) {
+    console.log('Player ready! Playlist ID:', playlistId);
+    event.target.setVolume(50); 
+  }
+  function onPlayerError(event) {
+    console.error('Player error:', event.data);
+    if (event.data === 150 || event.data === 101) { 
+      player.nextVideo(); 
+    }
+  }
+  console.log('Playlist ID loaded:', playlistId);
 }
-
 function error() {
-  alert("Sorry, no position available.")
+  alert("Sorry, no position available.");
 }
-
