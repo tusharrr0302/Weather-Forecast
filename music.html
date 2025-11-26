@@ -4,28 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MeghSwar - Mood Music</title>
+    
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="music.css">
+    <link rel="icon" type="image/x-icon" src="AppIcon.png">
+    
+    <script src="https://kit.fontawesome.com/03ac1bddf8.js" crossorigin="anonymous"></script>
 </head>
-
-<link rel="icon" type="image/x-icon" src="AppIcon.png">
-<script src="https://kit.fontawesome.com/03ac1bddf8.js" crossorigin="anonymous"></script>
-
-
-<script src="music.js"></script>
-
 <body>
     <header class="site-header">
-            <nav class="site-nav">
-                <div class="nav-links">
-                    <img src="AppIcon.png" alt="MeghDrishti" style="height:40px; margin-right:10px; vertical-align:middle;">
-                    <a href="home.html" class="nav-link nav-home">Home</a>
-                    <a href="index.html" class="nav-link nav-weather">MeghVani</a>
-                    <a href="music.html" class="nav-link nav-music">MeghSwar</a>
-                    <a href="about.html" class="nav-link nav-about">About</a>
-                </div>
-            </nav>
-        </header>
-        
-    <div id="music-player"></div>
+        <nav class="site-nav">
+            <div class="nav-links">
+                <img src="AppIcon.png" alt="MeghDrishti" style="height:40px; margin-right:10px; vertical-align:middle;">
+                <a href="home.html" class="nav-link nav-home">Home</a>
+                <a href="index.html" class="nav-link nav-weather">MeghVani</a>
+                <a href="music.html" class="nav-link nav-music">MeghSwar</a>
+                <a href="about organi.html" class="nav-link nav-about">About</a>
+            </div>
+        </nav>
+    </header>
+    
+    <!-- Hidden YouTube Player -->
+    <div id="youtube-player"></div>
+
+    <!-- Beautiful Bottom Music Player -->
+    <div id="music-player">
+        <div class="player-container">
+            <div class="track-info">
+                <h3 id="track-title">Loading your mood music...</h3>
+                <p>
+                    <span id="weather-mood">Detecting weather...</span>
+                    <span class="weather-tag" id="weather-tag">Clear</span>
+                </p>
+            </div>
+
+            <div class="controls">
+                <button id="prev-btn" title="Previous"><i class="fas fa-step-backward"></i></button>
+                <button id="play-pause" title="Play/Pause"><i class="fas fa-play"></i></button>
+                <button id="next-btn" title="Next"><i class="fas fa-step-forward"></i></button>
+            </div>
+
+            <div class="volume-control">
+                <i class="fas fa-volume-up"></i>
+                <input type="range" id="volume-slider" min="0" max="100" value="70">
+            </div>
+        </div>
+    </div>
+
+    <script src="music.js"></script>
 </body>
+</html>

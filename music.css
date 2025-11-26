@@ -1,45 +1,83 @@
-*{
-  margin : 0;
-  padding : 0;
-  font-family : 'poppins', sans-serif;
-  box-sizing : border-box;
+#music-player {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    color: white;
+    padding: 15px 20px;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    box-shadow: 0 -5px 25px rgba(0,0,0,0.6);
+    z-index: 1000;
+    backdrop-filter: blur(10px);
 }
 
-.container{
-  width : 100%;
-  height: 100vh;
-  align-items : center;
-  display : flex;
-  justify-content : center;
-  flex-wrap : wrap;
+.player-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
-.music-player{
-  width : auto;
-  background : #222222;
-  border-radius : 10px;
-  box-shadow : 0 15px 25px rgba(33, 33, 33, 0.5);
-  padding : 25px 35px;
-  text-align : center;
+.track-info h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.nav{
-    display : flex;
-    justify-content : space-between;
-    margin-bottom : 30px;
+.track-info p {
+    margin: 5px 0 0;
+    opacity: 0.85;
+    font-size: 0.9rem;
 }
 
-.lang{
-    position : absolute;
-    top : 20px;
-    right : 20px;
-    font-family: 'poppins', sans-serif;
-    font-size : 14px;
-    color : #fff;
-    cursor : pointer;
-} 
+.weather-tag {
+    background: rgba(255,255,255,0.25);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    margin-left: 8px;
+}
 
+.controls button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.8rem;
+    cursor: pointer;
+    padding: 8px;
+    opacity: 0.8;
+    transition: all 0.2s;
+}
 
+.controls button:hover {
+    opacity: 1;
+    transform: scale(1.15);
+}
 
+.controls b#play-pause {
+    font-size: 2.3rem;
+}
 
+.volume-control input[type="range"] {
+    width: 100px;
+    accent-color: #4facfe;
+}
 
+#youtube-player {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+}
+
+body {
+    padding-bottom: 100px !important;   /* This creates space for the fixed player */
+    min-height: 100vh;
+}
