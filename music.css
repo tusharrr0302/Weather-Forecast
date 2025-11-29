@@ -77,13 +77,6 @@
     height: 1px
 }
 
-.brand-icon {
-    height: 40px;
-    margin-right: 10px;
-    vertical-align: middle;
-    display: inline-block
-}
-
 body {
     padding-bottom: 100px !important; 
     min-height: 100vh

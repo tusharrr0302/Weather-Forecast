@@ -125,7 +125,6 @@
         padding-left: 6%;
         padding-right: 6%
     }
-    .hero-title {
-        font-size: clamp(2.8rem, 4vw, 3.6rem)
+    .hero-title {font-size: clamp(2.8rem, 4vw, 3.6rem)
     }
 }
