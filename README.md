@@ -42,13 +42,28 @@ https://tusharrr0302.github.io/MeghDrishti/
 
 ## Project Structure
 
-MeghDrishti/  
-├── home.html  
-├── index.html  
-├── about.html  
-├── style.css  
-├── script.js  
-└── screenshots/
+MeghDrishti/
+├── .DS_Store
+├── AppIcon.png
+├── AppIcon.psd
+├── README.md
+├── md.png
+│
+├── home.html
+├── home.css
+│
+├── index.html
+├── index.css
+│
+├── about.html
+│
+├── music.html
+├── music-sub.html
+├── music.css
+├── music.js
+│
+├── script.js
+└── style.css
 
 ## Future Plans
 
